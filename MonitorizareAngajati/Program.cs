@@ -19,7 +19,8 @@ namespace MonitorizareAngajati
         {
             UserRepository userRepository = new UserRepository();
             LogsRepository logsRepository = new LogsRepository();
-            Services services = new Services(userRepository, logsRepository);
+            TasksRepository tasksRepository = new TasksRepository();
+            Services services = new Services(userRepository, logsRepository, tasksRepository);
             MainController mainController = new MainController(services);
         }
     }

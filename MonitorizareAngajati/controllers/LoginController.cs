@@ -25,7 +25,7 @@ namespace MonitorizareAngajati.controllers
         {
             string username = loginForm.getUsernameText();
             string password = loginForm.getPasswordText();
-            Observer client;
+            Observer client = null;
 
             try
             {
@@ -42,9 +42,13 @@ namespace MonitorizareAngajati.controllers
                 client.displayForm();
                 loginForm.Close();
             }
-            catch (Exception ex)
+            catch(LoginException ex)
             {
                 loginForm.displayErrorMessage(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 

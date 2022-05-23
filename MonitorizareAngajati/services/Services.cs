@@ -13,15 +13,17 @@ namespace MonitorizareAngajati.services
     {
         private UserRepository userRepository;
         private LogsRepository logsRepository;
+        private TasksRepository tasksRepository;
         private UserValidator validator = new UserValidator();
 
         private Dictionary<int, EmployeeObserver> loggedUsers;
         private AdministratorObserver administratorObserver = null;
 
-        public Services(UserRepository userRepository, LogsRepository logsRepository)
+        public Services(UserRepository userRepository, LogsRepository logsRepository, TasksRepository tasksRepository)
         {
             this.userRepository = userRepository;
             this.logsRepository = logsRepository;
+            this.tasksRepository = tasksRepository;
             loggedUsers = new Dictionary<int, EmployeeObserver>();
         }
 
@@ -35,7 +37,7 @@ namespace MonitorizareAngajati.services
                 String actualPassword = userRepository.getPassword(user);
                 if (!actualPassword.Equals(password))
                 {
-                    throw new Exception();
+                    throw new Exception("Autentificare esuata!");
                 }
                 if (loggedUsers.ContainsKey(user.getKey()))
                     throw new Exception("Utilizator deja autentificat.");
@@ -46,8 +48,9 @@ namespace MonitorizareAngajati.services
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                throw new Exception("Autentificare esuata!");
+                throw new LoginException(ex.Message);
             }
+   
             return user;
         }
 
@@ -57,7 +60,11 @@ namespace MonitorizareAngajati.services
             if (user.getUsername() != "admin")
             {
                 logsRepository.remove(user);
-                administratorObserver.employeeListChanged();
+                tasksRepository.removeTasksUser(user.getKey());
+                if (administratorObserver != null)
+                {
+                    administratorObserver.employeeListChanged();
+                }
                 removed = loggedUsers.Remove(user.getKey());
             }
             else
@@ -101,7 +108,10 @@ namespace MonitorizareAngajati.services
                 throw new Exception("Logare ora esuata!");
             }
 
-            administratorObserver.employeeListChanged();
+            if (administratorObserver != null)
+            {
+                administratorObserver.employeeListChanged();
+            }
         }
 
         public List<UserLogDTO> getLoggedUsers()
@@ -126,6 +136,38 @@ namespace MonitorizareAngajati.services
             reader.Close();
 
             return loggedUsers;
+        }
+
+        private void notifyUsersTaskListChanged()
+        {
+            foreach(var user in this.loggedUsers)
+            {
+                user.Value.taskListChanged();
+            }
+            if (administratorObserver != null)
+            {
+                administratorObserver.taskListChanged();
+            }
+        }
+
+        public void addTask(model.Task task)
+        {
+            tasksRepository.save(task);
+            notifyUsersTaskListChanged();
+        }
+
+        public void removeTask(int id)
+        {
+            tasksRepository.remove(id);
+            notifyUsersTaskListChanged();
+        }
+
+        public void updateTask(int id, string newStatus)
+        {
+            model.Task task = new model.Task(0, newStatus, "");
+            task.setKey(id);
+            tasksRepository.update(task);
+            notifyUsersTaskListChanged();
         }
     }
 }

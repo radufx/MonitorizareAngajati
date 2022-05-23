@@ -18,6 +18,17 @@ namespace MonitorizareAngajati
         {
             this.controller = controller;
             InitializeComponent();
+            statusAllButton.CheckedChanged += new EventHandler(radioButtons_CheckedChanged);
+            statusDoneButton.CheckedChanged += new EventHandler(radioButtons_CheckedChanged);
+            statusProgressButton.CheckedChanged += new EventHandler(radioButtons_CheckedChanged);
+            statusTodoButton.CheckedChanged += new EventHandler(radioButtons_CheckedChanged);
+        }
+
+        public void bindData(BindingSource bindingTasks)
+        {
+            tasksGridView.DataSource = bindingTasks;
+            taskIDLabel.DataBindings.Add("Text", bindingTasks, "id");
+            taskIDLabel.Visible = false;
         }
 
         private void logoutButton_Click(object sender, EventArgs e)
@@ -34,6 +45,38 @@ namespace MonitorizareAngajati
             else
             {
                 MessageBox.Show(text);
+            }
+        }
+
+        private void buttonUpdateTask_Click(object sender, EventArgs e)
+        {
+            controller.displayUpdateTaskDialog();
+        }
+
+        public string getSelectedTaskID()
+        {
+            return taskIDLabel.Text;
+        }
+
+        private void radioButtons_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton radioButton = sender as RadioButton;
+
+            if (statusTodoButton.Checked)
+            {
+                controller.filterTasks("De facut");
+            }
+            else if (statusDoneButton.Checked)
+            {
+                controller.filterTasks("Terminat");
+            } 
+            else if (statusProgressButton.Checked)
+            {
+                controller.filterTasks("In progres");
+            }
+            else
+            {
+                controller.filterTasks("all");
             }
         }
     }

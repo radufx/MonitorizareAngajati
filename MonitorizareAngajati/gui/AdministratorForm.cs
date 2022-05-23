@@ -23,7 +23,6 @@ namespace MonitorizareAngajati
         public void updateLoggedUsersList<T>(List<T> loggedUsers)
         {
             loggedUsersGridView.DataSource = loggedUsers;
-            noLoggedUsersLabel.Text = loggedUsers.Count().ToString();
         }
 
         private void buttonLogout_Click(object sender, EventArgs e)
@@ -41,6 +40,31 @@ namespace MonitorizareAngajati
             {
                 MessageBox.Show(text);
             }
+        }
+
+        public void bindData(BindingSource bindingParent, BindingSource bindingChild)
+        {
+            loggedUsersGridView.DataSource = bindingParent;
+            userTasksGridView.DataSource = bindingChild;
+            userIDLabel.DataBindings.Add("Text", bindingParent, "id");
+            taskIDLabel.DataBindings.Add("Text", bindingChild, "id");
+            userIDLabel.Visible = false;
+            taskIDLabel.Visible = false;
+        }
+
+        private void buttonAddTask_Click(object sender, EventArgs e)
+        {
+            administratorController.displayAddTaskDialog();
+        }
+
+        public int getSelectedUserID()
+        {
+            return Int32.Parse(userIDLabel.Text);
+        }
+
+        private void buttonDeleteTask_Click(object sender, EventArgs e)
+        {
+            administratorController.deleteTask(taskIDLabel.Text);
         }
     }
 }
